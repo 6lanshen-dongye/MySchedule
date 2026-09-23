@@ -573,6 +573,15 @@ internal const val SCRAPE_JS = """(function () {
     var listOut = parseListTables();
     if (listOut.length) out = listOut;
   }
+  /* 兜底:网格视图(表格)有时只能解析出残缺结果,
+     此时把「课表信息」「课程名称」两条路也跑一遍,谁解析出的课多就用谁 ——
+     用户不用关心当前停在哪个视图。 */
+  if (best && best.offsetParent !== null) {
+    var altInfo = parseInfoTables();
+    var altList = parseListTables();
+    var alt = altInfo.length >= altList.length ? altInfo : altList;
+    if (alt.length > out.length) out = alt;
+  }
 
   if (!out.length) {
     /* 还是空的话,把这张表的内容结构报出来,方便定位 */
@@ -614,7 +623,7 @@ internal const val SCRAPE_JS = """(function () {
       msg: '表格没解析出课程(共' + grid.length + '行,星期列[' + Object.keys(bestMap).join(',') + ']' +
         (probes.length ? ' 探针:' + probes.join(' ') : ' 数据行是空的') +
         (miss.length ? ' 缺星期或节次:' + miss.slice(0, 3).join(';') : '') +
-        ')',
+        ');若当前是「表格」或「输出PDF」视图,请先切到「列表」视图再抓取',
       blocks: [],
       times: times,
       trace: trace.join('\n')
