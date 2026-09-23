@@ -1,5 +1,7 @@
 # 我的课程表 · MySchedule
 
+[![Release](https://img.shields.io/github/v/release/6lanshen-dongye/MySchedule?color=3B7CF0&label=release)](https://github.com/6lanshen-dongye/MySchedule/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Android%208.0%2B-3DDC84)](https://github.com/6lanshen-dongye/MySchedule)
+
 一个**离线优先**的 Android 课表应用，用 Jetpack Compose 从零写成，界面参考「超级课程表」。
 支持从**正方教务系统**（`jwglxt`）一键导入课表，也可以完全手动添加。
 
@@ -61,7 +63,15 @@
 
 ## 📦 下载安装
 
-到 Releases 页面下载 `app-release.apk`，传到手机直接安装即可（需要在系统里允许「安装未知来源应用」）。
+**[⬇️ 下载 MySchedule-v1.0.apk](https://github.com/6lanshen-dongye/MySchedule/releases/download/v1.0/MySchedule-v1.0.apk)** · 10.5 MB · Android 8.0+
+
+也可以到 [Releases](../../releases) 页面挑选其它版本。
+
+1. 把 APK 传到手机（微信 / QQ / 数据线均可），点开安装；系统提示「未知来源」时允许即可
+2. 首次进入建议先去**设置**把「开学日期（第一周周一）」改成你学校的，周次就全对了
+
+> 国内直连 GitHub 下载较慢的话，可以在链接前加加速前缀，例如
+> `https://gh-proxy.com/https://github.com/6lanshen-dongye/MySchedule/releases/download/v1.0/MySchedule-v1.0.apk`
 
 ## 🔨 从源码构建
 
