@@ -63,7 +63,7 @@
 
 ## 📦 下载安装
 
-**[⬇️ 下载 MySchedule-v1.0.apk](https://github.com/6lanshen-dongye/MySchedule/releases/download/v1.0/MySchedule-v1.0.apk)** · 10.5 MB · Android 8.0+
+**[⬇️ 下载 MySchedule-v1.0.1.apk](https://github.com/6lanshen-dongye/MySchedule/releases/download/v1.0.1/MySchedule-v1.0.1.apk)** · 10.5 MB · Android 8.0+
 
 也可以到 [Releases](../../releases) 页面挑选其它版本。
 
@@ -71,7 +71,7 @@
 2. 首次进入建议先去**设置**把「开学日期（第一周周一）」改成你学校的，周次就全对了
 
 > 国内直连 GitHub 下载较慢的话，可以在链接前加加速前缀，例如
-> `https://gh-proxy.com/https://github.com/6lanshen-dongye/MySchedule/releases/download/v1.0/MySchedule-v1.0.apk`
+> `https://gh-proxy.com/https://github.com/6lanshen-dongye/MySchedule/releases/download/v1.0.1/MySchedule-v1.0.1.apk`
 
 ## 🔨 从源码构建
 
@@ -159,6 +159,9 @@ app/src/main/java/com/myschedule/app/
 > 想换默认模板的话，改 `ui/imports/ImportActivity.kt` 里的
 > `ZHENGFANG_KB_TEMPLATE` / `ZHENGFANG_HOME_TEMPLATE` 两个常量；
 > 解析脚本本身对正方 `jwglxt` 各版本通用。
+> **抓取策略**：网格、课表信息、课程名称**三条解析路会同时跑**，取课程最完整的一路 ——
+> 所以停在「表格」视图还是「列表」视图都能抓到。
+> 「输出PDF」是浏览器打印预览页，页面里没有课表表格结构，请切回「列表」或「表格」视图再抓取。
 脚本对页面版式做了较多兼容（字段带不带标签、run-on 长文本、`<hr>` 分隔、隐藏网格表等），
 对应回归用例在 `tools/parser-tests/`。
 
