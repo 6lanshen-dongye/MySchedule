@@ -2,7 +2,7 @@
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
 
-const ktPath = 'D:\\CourseScheduleApp\\MySchedule\\app\\src\\main\\java\\com\\myschedule\\app\\ui\\imports\\ScrapeScript.kt';
+const ktPath = require('path').join(__dirname, '..', '..', 'app', 'src', 'main', 'java', 'com', 'myschedule', 'app', 'ui', 'imports', 'ScrapeScript.kt');
 const kt = fs.readFileSync(ktPath, 'utf8');
 const startMark = 'internal const val SCRAPE_JS = """';
 const s = kt.indexOf(startMark);
@@ -11,7 +11,7 @@ const bodyStart = s + startMark.length;
 const e = kt.indexOf('"""', bodyStart);
 let js = kt.substring(bodyStart, e).split("${'$'}").join('$');
 
-const html = fs.readFileSync('D:\\CourseScheduleApp\\kb_zhengfang_test.html', 'utf8');
+const html = fs.readFileSync(require('path').join(__dirname, 'kb_zhengfang_test.html'), 'utf8');
 const dom = new JSDOM(html, { runScripts: 'outside-only' });
 global.window = dom.window;
 global.document = dom.window.document;
