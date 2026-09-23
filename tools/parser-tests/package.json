@@ -1,0 +1,11 @@
+{
+  "name": "myschedule-parser-tests",
+  "private": true,
+  "description": "正方教务系统课表解析回归测试(jsdom)",
+  "scripts": {
+    "test": "node parse_test.js && node parse_test_zf.js && node parse_test_zf52.js && node parse_test_list.js && node parse_test_lv.js && node parse_test_info.js && node parse_test_multiline.js && node parse_test_runon.js && node parse_test_empty.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}

@@ -1,0 +1,41 @@
+# ── 构建产物 ──
+build/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+release/
+captures/
+output.json
+
+# ── Gradle ──
+.gradle/
+.gradletaskhistory
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletaskhistory
+
+# ── 本机配置(含 SDK 路径与签名密码,绝对不要提交) ──
+local.properties
+keystore/
+*.jks
+*.keystore
+keystore.properties
+
+# ── IDE ──
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.vscode/
+.DS_Store
+
+# ── Kotlin ──
+.kotlin/
+
+# ── 调试/抓取产物(含个人课表数据) ──
+scrape_debug*.txt
+*.hprof
