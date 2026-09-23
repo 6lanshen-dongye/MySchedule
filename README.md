@@ -41,7 +41,7 @@
 
 ## 📱 截图
 
-| 课表 | 快速滑动 | 今日 | 当天详情 |
+| 课表 | 快速滑动 | 今日 | 课程详情 |
 |---|---|---|---|
 | ![课表](docs/screenshots/01-schedule.png) | ![快速滑动](docs/screenshots/02-quick-week.png) | ![今日](docs/screenshots/03-today.png) | ![当天详情](docs/screenshots/04-day-detail.png) |
 
