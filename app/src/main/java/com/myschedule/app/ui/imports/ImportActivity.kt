@@ -190,11 +190,15 @@ class ImportActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             setPadding(dp(12), 0, dp(12), dp(8))
         }
-        quickRow.addView(chipButton("东湖学院 · 智慧校园") {
-            urlEdit.setText(SCHOOL_PORTAL); load(SCHOOL_PORTAL)
+        quickRow.addView(chipButton("正方课表页(模板)") {
+            urlEdit.setText(ZHENGFANG_KB_TEMPLATE)
+            load(ZHENGFANG_KB_TEMPLATE)
+            toast("把网址里的 example.edu.cn 换成你学校的域名")
         })
-        quickRow.addView(chipButton("学校官网") {
-            urlEdit.setText(SCHOOL_HOME); load(SCHOOL_HOME)
+        quickRow.addView(chipButton("正方首页(模板)") {
+            urlEdit.setText(ZHENGFANG_HOME_TEMPLATE)
+            load(ZHENGFANG_HOME_TEMPLATE)
+            toast("把网址里的 example.edu.cn 换成你学校的域名")
         })
         desktopBtn = chipButton("桌面版:关") {
             desktopMode = !desktopMode
@@ -291,7 +295,7 @@ class ImportActivity : Activity() {
             return
         }
         if (u.any { it.code in 0x3400..0x9FFF }) {
-            toast("网址里不能有中文。请填英文域名,例如 portal.wdu.edu.cn")
+            toast("网址里不能有中文。请填英文域名,例如 jwglxt.xxx.edu.cn")
             return
         }
         u = u.replace(" ", "")
@@ -421,10 +425,16 @@ class ImportActivity : Activity() {
     companion object {
         private val DAY_NAMES = listOf("一", "二", "三", "四", "五", "六", "日")
 
-        /** 与官网页头「智慧校园」一致 */
-        const val SCHOOL_PORTAL = "https://portal.wdu.edu.cn/"
-        const val SCHOOL_HOME = "https://www.wdu.edu.cn/"
-        const val DEFAULT_PORTAL = SCHOOL_PORTAL
+        /**
+         * 通用正方教务系统入口模板。
+         * `example.edu.cn` 是 RFC 保留的示例域名,只是个占位 ——
+         * 用的时候把它换成你学校的域名即可(填过一次会记住,下次直接打开)。
+         */
+        const val ZHENGFANG_KB_TEMPLATE =
+            "https://jwglxt.example.edu.cn/jwglxt/kbcx/xskbcx_cxXskbcxIndex.html" +
+                    "?gnmkdm=N253508&layout=default"
+        const val ZHENGFANG_HOME_TEMPLATE = "https://jwglxt.example.edu.cn/jwglxt/"
+        const val DEFAULT_PORTAL = ZHENGFANG_KB_TEMPLATE
 
         private const val DESKTOP_UA =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +

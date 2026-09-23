@@ -143,8 +143,11 @@ app/src/main/java/com/myschedule/app/
 5. 解析失败时会把页面结构与解析轨迹写到
    `Android/data/com.myschedule.app/files/scrape_debug.txt`，方便提 issue。
 
-> 导入页里预置了作者学校的入口（**武汉东湖学院 · 正方教务系统**）。
-> 换成你自己的学校：改 `ui/imports/ImportActivity.kt` 里的 `SCHOOL_PORTAL` / `SCHOOL_HOME` 两个常量即可，
+> **不需要改代码就能用**：导入页里直接填你学校的教务系统网址即可（填过一次会记住）。
+> 页面上的两个快捷按钮会填入**通用正方模板**（`https://jwglxt.example.edu.cn/...`），
+> 把 `example.edu.cn` 换成你学校的域名就行。
+> 想换默认模板的话，改 `ui/imports/ImportActivity.kt` 里的
+> `ZHENGFANG_KB_TEMPLATE` / `ZHENGFANG_HOME_TEMPLATE` 两个常量；
 > 解析脚本本身对正方 `jwglxt` 各版本通用。
 脚本对页面版式做了较多兼容（字段带不带标签、run-on 长文本、`<hr>` 分隔、隐藏网格表等），
 对应回归用例在 `tools/parser-tests/`。
