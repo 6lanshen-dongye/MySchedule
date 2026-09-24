@@ -396,7 +396,23 @@ document.querySelectorAll("nav button").forEach(b=> b.onclick = ()=> switchTab(+
 
 $("jumpBtn").onclick = ()=>{ quickOpen = !quickOpen; previewWeek = viewWeek; renderAll(); };
 $("todayBtn").onclick = ()=>{ viewWeek = weekOfDate(today()) || viewWeek; previewWeek = viewWeek; renderAll(); };
-$("addBtn").onclick = ()=> addCourse(1,1);
+$("addBtn").onclick = ()=> addMenu();
+
+/* ＋ 菜单:和 Android 版对齐(快速滑动 / 教务系统导课 / 手动添课) */
+function addMenu(){
+  sheet('<h3>添加</h3>'+
+    '<button class="btn ghost" id="mQuick">⇄ 快速滑动 · 浏览周次</button>'+
+    '<button class="btn" id="mImport">📋 从剪贴板导入课表(推荐)</button>'+
+    '<button class="btn ghost" id="mBm">🔖 怎么获取导课书签</button>'+
+    '<button class="btn ghost" id="mManual">✏️ 手动添课</button>'+
+    '<div class="hint">导课步骤:Safari 打开学校课表页 → 切「列表」→ 长按全选拷贝 → 回到这里点「从剪贴板导入」。</div>'+
+    '<div class="acts"><button class="btn ghost" id="mClose" style="width:auto;padding:9px 14px">关闭</button></div>');
+  $("mQuick").onclick = ()=>{ quickOpen = true; previewWeek = viewWeek; renderAll(); closeSheet(); };
+  $("mImport").onclick = ()=>{ closeSheet(); doImportFromClipboard(); };
+  $("mBm").onclick = ()=>{ closeSheet(); showBookmarkletHelp(); };
+  $("mManual").onclick = ()=>{ closeSheet(); addCourse(1,1); };
+  $("mClose").onclick = closeSheet;
+}
 
 /* 左右滑动切周 */
 let sx=0, sy=0, tracking=false;
