@@ -336,7 +336,9 @@ function renderSettings(){
     '</div>'+
     '<div class="panel"><h4>课程('+data.courses.length+' 门)</h4>'+
       '<button class="btn" id="addManual">＋ 手动添加课程</button>'+
-      '<button class="btn ghost" id="importJson">从 JSON 导入课表</button>'+
+      '<button class="btn" id="clipImport">📋 从剪贴板导入课表(导课书签用)</button>'+
+      '<button class="btn ghost" id="bmBtn">🔖 怎么获取导课书签</button>'+
+      '<button class="btn ghost" id="importJson">粘贴 JSON 导入</button>'+
       '<button class="btn ghost" id="exportJson">导出备份(JSON)</button>'+
       '<div class="hint">数据只保存在这台设备的浏览器里,不上传任何服务器。</div>'+
     '</div>'+
@@ -351,6 +353,8 @@ function renderSettings(){
     save(); viewWeek = Math.min(viewWeek, data.semester.weeks); renderAll(); toast("已保存");
   };
   $("addManual").onclick = ()=> addCourse(1,1);
+  $("clipImport").onclick = ()=> doImportFromClipboard();
+  $("bmBtn").onclick = ()=> showBookmarkletHelp();
   $("exportJson").onclick = ()=>{
     const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const a = document.createElement("a");
@@ -444,6 +448,117 @@ function addCourse(day, period){
     save(); closeSheet(); renderAll(); toast("已添加");
   };
 }
+
+/* ───────── 导课:解析 + 书签 ───────── */
+const WEBAPP = "https://6lanshen-dongye.github.io/MySchedule/";
+
+/* 解析教务系统抓取结果(与 Android 版同源的思路:网格表 + 列表/信息表两条路) */
+function parseScraped(list){
+  const out=[];
+  const clean = s=> String(s||"").replace(/\s+/g," ").trim();
+  const findWeeks = t=>{
+    let m = clean(t).match(/(\d+)\s*[-~]\s*(\d+)\s*周/);
+    if(m && +m[1] <= +m[2]) return m[1]+"-"+m[2]+"周";
+    m = clean(t).match(/(?:^|[^\d])(\d{1,2})\s*周/);
+    return m ? m[1]+"周" : "";
+  };
+  const strip = t=> clean(t)
+    .replace(/周数\s*[:：][^ ]*/g,"").replace(/周次\s*[:：][^ ]*/g,"")
+    .replace(/教师\s*[:：][^ ]*/g,"").replace(/老师\s*[:：][^ ]*/g,"")
+    .replace(/地点\s*[:：][^ ]*/g,"").replace(/教室\s*[:：][^ ]*/g,"")
+    .replace(/\d+\s*[-~]\s*\d+\s*周/g,"").replace(/\d+\s*周/g,"").replace(/\s+/g," ").trim();
+  const field = (t,keys)=>{
+    for(const k of keys){ const m = clean(t).match(new RegExp(k+"\\s*[:：]\\s*([^ ]+)")); if(m) return m[1]; }
+    return "";
+  };
+  (list||[]).forEach(it=>{
+    const raw = clean(it.text); if(!raw) return;
+    const name = strip(raw);
+    if(!name || name.length < 2) return;
+    const weeks = findWeeks(raw);
+    const teacher = field(raw,["教师","老师","授课教师"]);
+    const location = field(raw,["地点","教室","上课地点"]);
+    let sp = it.period || 0, ep = sp;
+    const pm = raw.match(/第?\s*(\d+)\s*[-~]\s*(\d+)\s*节/) || String(it.title||"").match(/(\d+)\s*[-~]\s*(\d+)/);
+    if(pm){ sp = +pm[1]; ep = +pm[2]; }
+    if(!sp || sp<1 || sp>14) return;
+    let day = it.day || 0;
+    if(!day){ const dm = raw.match(/星期([一二三四五六日天])|周([一二三四五六日天])/);
+      if(dm) day = "一二三四五六日".indexOf((dm[1]||dm[2]).replace("天","日")) + 1; }
+    if(!day) return;
+    out.push({ day:day, start:sp, end:Math.max(sp,ep), name:name.slice(0,40),
+               teacher, location, weeks: weeks || ("1-"+data.semester.weeks+"周") });
+  });
+  return out;
+}
+
+/* 把散块合成课程(同名同老师同地点合并时间段) */
+function buildCourses(blocks){
+  const map = {};
+  blocks.forEach(b=>{
+    const k = b.name+"|"+b.teacher+"|"+b.location;
+    if(!map[k]) map[k] = { name:b.name, teacher:b.teacher, location:b.location,
+      weeks:b.weeks, sessions:[], color:Object.keys(map).length % COLORS.length };
+    if(!map[k].sessions.some(s=>s.day===b.day && s.start===b.start && s.end===b.end))
+      map[k].sessions.push({ day:b.day, start:b.start, end:b.end });
+  });
+  return Object.values(map).filter(c=>c.sessions.length);
+}
+
+function applyImport(jsonText){
+  let obj;
+  try{ obj = JSON.parse(jsonText); }catch(e){ toast("内容不是有效 JSON"); return false; }
+  let blocks = Array.isArray(obj) ? obj : (obj.blocks || []);
+  if(!blocks.length){ toast("没解析到课程,请确认在课表页执行导课书签"); return false; }
+  /* 已是标准块(day/start)就直接用,否则按文本再解析一遍 */
+  const need = blocks.some(b=>!b.day || !b.start);
+  const parsed = need ? parseScraped(blocks.map(b=>({ text:b.text||b.raw||"", day:b.day, start:b.start, title:b.title }))) : blocks;
+  const courses = buildCourses(parsed.map(b=>({
+    name:b.name, teacher:b.teacher||"", location:b.location||"",
+    weeks:b.weeks||"", day:b.day, start:b.start, end:b.end||b.start
+  })));
+  if(!courses.length){ toast("解析到 0 门课,换个视图(列表/表格)再试"); return false; }
+  data.courses = courses;
+  if(obj.semester && obj.semester.start) data.semester = Object.assign(data.semester, obj.semester);
+  save(); renderAll();
+  toast("已导入 "+courses.length+" 门课程");
+  return true;
+}
+
+async function doImportFromClipboard(){
+  try{
+    const t = await navigator.clipboard.readText();
+    if(!t){ toast("剪贴板是空的,请先执行导课书签"); return; }
+    applyImport(t);
+  }catch(e){
+    sheet('<h3>粘贴导入</h3><p>浏览器不允许直接读剪贴板,请手动粘贴:</p>'+
+      '<textarea id="pasteArea" placeholder="把导课书签复制的内容粘贴到这里"></textarea>'+
+      '<div class="acts"><button class="btn ghost" id="pc" style="width:auto;padding:9px 14px">取消</button>'+
+      '<button class="btn" id="po" style="width:auto;padding:9px 18px">导入</button></div>');
+    $("pc").onclick = closeSheet;
+    $("po").onclick = ()=>{ if(applyImport($("pasteArea").value)) closeSheet(); };
+  }
+}
+
+function showBookmarkletHelp(){
+  const bm = document.getElementById("bmCode") ? "" : "";
+  sheet('<h3>导课书签怎么用</h3>'+
+    '<p><b>1.</b> 电脑或手机上打开下方链接,把里面的代码复制下来<br>'+
+    '<b>2.</b> Safari 里随便收藏一个网页,再把收藏的<b>网址改成这段代码</b>,名字起「导课」<br>'+
+    '<b>3.</b> 以后在教务系统课表页,地址栏输入「导课」选中该书签即可运行<br>'+
+    '<b>4.</b> 运行后会复制课表并跳回本页,点「📋 从剪贴板导入课表」完成导入</p>'+
+    '<textarea id="bmText" readonly style="min-height:90px;font-size:11px">'+BM_CODE+'</textarea>'+
+    '<div class="acts"><button class="btn" id="bmCopy" style="width:auto;padding:9px 18px">复制书签代码</button>'+
+    '<button class="btn ghost" id="bmClose" style="width:auto;padding:9px 14px">关闭</button></div>');
+  $("bmCopy").onclick = ()=>{
+    const ta = $("bmText"); ta.select(); ta.setSelectionRange(0,99999);
+    try{ document.execCommand("copy"); toast("已复制"); }catch(e){ toast("请长按选择复制"); }
+  };
+  $("bmClose").onclick = closeSheet;
+}
+
+/* 书签代码(在教务系统页面执行:抓取 → 复制 → 跳回课表页) */
+const BM_CODE = "javascript:(function(){var d=[],D=['一','二','三','四','五','六','日'];function T(e){return(e.innerText||e.textContent||'').replace(/\\s+/g,' ').trim()}var ts=[].slice.call(document.querySelectorAll('table'));ts.forEach(function(tb){var rs=[].slice.call(tb.rows),h=-1,dm={},i,j;for(i=0;i<rs.length;i++){var cs=[].slice.call(rs[i].cells);for(j=0;j<cs.length;j++){var t=T(cs[j]).replace(/\\s/g,'');var m=t.match(/^星期([一二三四五六日天])$/);if(m){dm[j]=D.indexOf(m[1].replace('天','日'))+1;h=i}}if(Object.keys(dm).length)break}if(!Object.keys(dm).length)return;for(i=h+1;i<rs.length;i++){var cs2=[].slice.call(rs[i].cells);var f=T(cs2[0]||{});var pm=f.match(/^(\\d+)/);var pd=pm?+pm[1]:0;for(j=0;j<cs2.length;j++){var dy=dm[j];if(!dy)continue;var c=cs2[j];var tx=T(c);if(!tx||tx.length<2)continue;d.push({day:dy,start:pd,text:tx,title:c.getAttribute('title')||''})}}});if(!d.length){document.querySelectorAll('td,li,div,tr').forEach(function(e){var t=T(e);if(t&&t.length>4&&/周/.test(t)&&/(节|周数|周次)/.test(t)&&!/星期[一二三四五六日]/.test(t))d.push({day:0,start:0,text:t})})}var j=JSON.stringify({blocks:d});try{navigator.clipboard.writeText(j)}catch(e){}var w=window.open('','_self');if(!w)w=window;w.document.body.innerHTML='<div style=\"font:16px -apple-system;padding:28px;line-height:1.7\">✅ 课表已复制('+d.length+' 条)<br><br>现在回到课表 App,点「设置 → 📋 从剪贴板导入课表」<br><br><a href=\"https://6lanshen-dongye.github.io/MySchedule/\" style=\"color:#3b7cf0\">点这里打开课表页</a></div>'})()";
 
 /* ───────── 启动 ───────── */
 if(!localStorage.getItem(KEY)) save();
