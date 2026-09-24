@@ -1,0 +1,11 @@
+{
+  "name": "我的课程表",
+  "short_name": "课程表",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "lang": "zh-CN"
+}
