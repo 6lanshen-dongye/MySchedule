@@ -342,9 +342,20 @@ function renderSettings(){
       '<button class="btn ghost" id="exportJson">导出备份(JSON)</button>'+
       '<div class="hint">数据只保存在这台设备的浏览器里,不上传任何服务器。</div>'+
     '</div>'+
+    '<div class="panel"><h4>装到手机桌面(可选)</h4>'+
+      '<div class="hint" style="line-height:1.8">'+
+        '<b>iPhone / Safari</b><br>'+
+        '1. 确认是在 Safari 里打开 —— 若在微信内,点右上角 ⋯ → 在 Safari 中打开<br>'+
+        '2. 点分享图标(方框 + 向上箭头,iOS 15 以后在屏幕最底部那一行)<br>'+
+        '3. 分享菜单里往下滑,选「添加到主屏幕」<br>'+
+        '找不到分享按钮:轻点一下地址栏,工具栏就会显示出来。<br><br>'+
+        '<b>不装也能用</b>:把本页加入收藏,或用微信收藏这条链接,点开就是课表。<br><br>'+
+        '<b>Android</b>:浏览器菜单里选「添加到主屏幕」。'+
+      '</div>'+
+    '</div>'+
     '<div class="panel"><h4>关于</h4>'+
-      '<div class="hint">网页版 · 与 Android 版功能对齐(导课为下一步)。<br>'+
-      '加到主屏幕后可以像 App 一样全屏使用。</div>'+
+      '<div class="hint">网页版 · 与 Android 版功能对齐(支持导课书签与粘贴导入)。<br>'+
+      '数据只存本机,不上传服务器。</div>'+
     '</div>';
   $("saveSem").onclick = ()=>{
     data.semester.name = $("sName").value || "我的学期";
