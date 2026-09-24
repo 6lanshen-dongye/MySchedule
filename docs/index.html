@@ -505,11 +505,44 @@ function buildCourses(blocks){
   return Object.values(map).filter(c=>c.sessions.length);
 }
 
+/* 纯文本 → 课程块:给"在课表页全选复制"这条零安装路径用 */
+function textToBlocks(text){
+  const out=[];
+  String(text).split(/[\n\r]+/).forEach(line=>{
+    const t = line.replace(/\s+/g," ").trim();
+    if(t.length < 4) return;
+    if(!/周/.test(t)) return;
+    if(!/(节|周数|周次)/.test(t)) return;
+    if(/(星期|周)[一二三四五六日天]/.test(t) === false) return;   /* 认不出星期就跳过,不硬塞到周一 */
+    let day = 0;
+    const dm = t.match(/星期([一二三四五六日天])|周([一二三四五六日天])/);
+    if(dm) day = "一二三四五六日".indexOf((dm[1]||dm[2]).replace("天","日")) + 1;
+    let sp = 0, ep = 0;
+    const pm = t.match(/(\d+)\s*[-~至]\s*(\d+)\s*节/) || t.match(/第\s*(\d+)\s*[-~至]\s*(\d+)/);
+    if(pm){ sp = +pm[1]; ep = +pm[2]; }
+    else { const p2 = t.match(/第?\s*(\d+)\s*节/); if(p2){ sp = ep = +p2[1]; } }
+    if(!day || !sp) return;
+    out.push({ text:t, day:day, start:sp, end:Math.max(sp,ep), title:"" });
+  });
+  return out;
+}
+
 function applyImport(jsonText){
-  let obj;
-  try{ obj = JSON.parse(jsonText); }catch(e){ toast("内容不是有效 JSON"); return false; }
-  let blocks = Array.isArray(obj) ? obj : (obj.blocks || []);
-  if(!blocks.length){ toast("没解析到课程,请确认在课表页执行导课书签"); return false; }
+  const rawText = String(jsonText||"").trim();
+  if(!rawText){ toast("内容是空的"); return false; }
+  let obj = null;
+  try{ obj = JSON.parse(rawText); }catch(e){}
+  let blocks;
+  if(obj && typeof obj === "object"){
+    blocks = Array.isArray(obj) ? obj : (obj.blocks || []);
+  }else{
+    /* 不是 JSON:当成"从教务系统页面整页复制来的纯文本"来处理 —— 不用装书签也能导课 */
+    blocks = textToBlocks(rawText);
+  }
+  if(!blocks.length){
+    toast(obj ? "没解析到课程,换个视图(列表/表格)再复制一次" : "这段文字里没找到课表,请在课表页全选复制");
+    return false;
+  }
   /* 已是标准块(day/start)就直接用,否则按文本再解析一遍 */
   const need = blocks.some(b=>!b.day || !b.start);
   const parsed = need ? parseScraped(blocks.map(b=>({ text:b.text||b.raw||"", day:b.day, start:b.start, title:b.title }))) : blocks;
